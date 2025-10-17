@@ -1,0 +1,6 @@
+# Dependency Directories.
+node_modules
+
+# Configs & Variables.
+config.json
+*.sqlite

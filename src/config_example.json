@@ -1,0 +1,19 @@
+{
+  "version": "1.0",
+  "token": "YOUR BOT TOKEN HERE",
+  "clientId": "YOUR BOT ID HERE",
+  "guildId": "YOUR SERVER ID HERE",
+  "guildMode": true,
+  "rolesByLevel": {
+    "10": "YOUR ROLE ID HERE",
+    "20": "YOUR ROLE ID HERE",
+    "30": "YOUR ROLE ID HERE",
+    "40": "YOUR ROLE ID HERE",
+    "50": "YOUR ROLE ID HERE",
+    "60": "YOUR ROLE ID HERE",
+    "70": "YOUR ROLE ID HERE",
+    "80": "YOUR ROLE ID HERE",
+    "90": "YOUR ROLE ID HERE",
+    "NUMERAL LEVEL HERE": "YOUR ROLE ID HERE"
+  }
+}

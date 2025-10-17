@@ -1,0 +1,93 @@
+const { SlashCommandBuilder, PermissionFlagsBits, CommandInteraction, Client, MessageFlags } = require('discord.js');
+const db = require('../../utils/db');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('xp-add')
+    .setDescription('Add XP to a user.')
+    .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+    .addUserOption(option => 
+      option.setName('user')  
+        .setDescription('The user to modify.')
+        .setRequired(true)
+    )
+    .addIntegerOption(option =>
+      option.setName('amount')
+        .setDescription('Amount of XP to add.')
+        .setRequired(true)
+    ),
+  /**
+   * 
+   * @param {CommandInteraction} interaction 
+   * @param {Client} client 
+   */
+  async execute(interaction, client) {
+    const user = interaction.options.getUser('user');
+    const amount = interaction.options.getInteger('amount');
+
+    db.get('SELECT * FROM xp WHERE userId = ?', [user.id], async (err, row) => {
+      if (err) {
+        console.error('Database error:', err);
+        return interaction.reply({
+          content: '❌ An error occurred while accessing the database.',
+          flags: [
+            MessageFlags.Ephemeral
+          ]
+        });
+      }
+
+      let newXP, newTotalXP, newLevel;
+
+      if (!row) {
+        newXP = amount;
+        newLevel = 0;
+        db.run('INSERT INTO xp(userId, xp, totalXP, level, messages, voiceTime) VALUES (?, ?, ?, ?, ?)', [user.id, newXP, newTotalXP, newLevel, 0, 0]);
+      } else {
+        newXP = row.xp + amount;
+        newTotalXP = row.totalXP + amount;
+        newLevel = row.level;
+
+        const { getNeededXP } = require('../../utils/xpSystem');
+        while (newXP >= getNeededXP(newLevel)) {
+          newXP -= getNeededXP(newLevel);
+          newLevel++;
+        }
+
+        db.run('UPDATE xp SET xp = ?, totalXP = ?, level = ? WHERE userId = ?', [newXP, newTotalXP, newLevel, user.id]);
+      }
+
+      const config = require('../../config.json');
+      const rolesMap = config.rolesByLevel || {};
+      const roleLevels = Object.keys(rolesMap).map(lvl => parseInt(lvl)).sort((a, b) => b - a);
+
+      const guild = interaction.guild;
+      const member = await guild.members.fetch(user.id).catch(() => null);
+
+      if (member) {
+        let roleId = null;
+        for (const lvl of roleLevels) {
+          if (newLevel >= lvl) {
+            roleId = rolesMap[lvl.toString()];
+            break;
+          }
+        }
+
+        if (roleId && !member.roles.cache.has(roleId)) {
+          try {
+            await member.roles.add(roleId);
+            console.log(`✅ ${user.tag} received level ${newLevel} role.`);
+          } catch (err) {
+            console.error(`❌ Error giving role to ${user.tag}:`, err.message);
+          }
+        }
+      }
+
+      interaction.reply({
+        content: `✅ ${amount} XP added to ${user.tag}. New level: ${newLevel}`,
+        flags: [
+          MessageFlags.Ephemeral
+        ]
+      })
+    });
+  }
+}

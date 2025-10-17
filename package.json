@@ -1,0 +1,25 @@
+{
+  "name": "leveling-bot",
+  "version": "1.0.0",
+  "description": "A Leveling Bot for a single Discord.",
+  "main": "src/index.js",
+  "scripts": {
+    "run": "node src/index.js",
+    "removeCmds": "node src/removeCommands.js"
+  },
+  "keywords": [
+    "Discord Leveling Bot",
+    "Leveling Bot",
+    "Discord Bot",
+    "Discord Leveling"
+  ],
+  "author": "Herobrain_gamer",
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/rest": "^2.6.0",
+    "discord-api-types": "^0.38.29",
+    "discord.js": "^14.23.2",
+    "os": "^0.1.2",
+    "sqlite3": "^5.1.7"
+  }
+}
